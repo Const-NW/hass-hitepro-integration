@@ -1,0 +1,40 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HiTE PRO Gateway",
+        "description": "Set up your HiTE PRO gateway to automatically discover devices in Home Assistant via MQTT.",
+        "data": {
+          "url": "Gateway URL",
+          "api_key": "API Key"
+        }
+      },
+      "zeroconf_confirm": {
+        "title": "HiTE PRO Gateway",
+        "description": "A HiTE PRO gateway was discovered at {url}. Confirm to set up the integration.",
+        "data": {
+          "url": "Gateway URL",
+          "api_key": "API Key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the gateway",
+      "invalid_config": "Response does not contain valid HiTE PRO device config"
+    },
+    "abort": {
+      "already_configured": "HiTE PRO gateway is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HiTE PRO Options",
+        "description": "Configure the refresh interval for device discovery.",
+        "data": {
+          "scan_interval": "Refresh interval (seconds)"
+        }
+      }
+    }
+  }
+}

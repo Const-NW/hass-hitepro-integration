@@ -1,0 +1,3 @@
+refresh_devices:
+  name: Refresh HiTE PRO devices
+  description: Re-fetch the device config from the HiTE PRO gateway and update MQTT discovery entries.

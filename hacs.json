@@ -1,0 +1,7 @@
+{
+  "name": "HiTE PRO",
+  "content_in_root_directory": false,
+  "country": [],
+  "domains": ["hitepro"],
+  "homeassistant": "2023.1.0"
+}
