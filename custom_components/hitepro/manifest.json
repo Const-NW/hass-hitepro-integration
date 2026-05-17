@@ -1,7 +1,7 @@
 {
   "domain": "hitepro",
   "name": "HiTE PRO",
-  "codeowners": [],
+  "codeowners": ["illmouse"],
   "config_flow": true,
   "dependencies": ["mqtt"],
   "documentation": "https://github.com/illmouse/hass-hitepro-integration",
