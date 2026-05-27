@@ -114,16 +114,20 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
         state_topic = f"{WB_CTRL_TOPIC}/{control_id}"
         command_topic = None if readonly else f"{WB_CTRL_TOPIC}/{control_id}/on"
 
+        device_payload: dict[str, Any] = {
+            "name": device_name,
+            "identifiers": [device_id],
+            "manufacturer": "HiTE PRO",
+            "model": device_model,
+        }
+        if zone and zone != "Дом":
+            device_payload["suggested_area"] = zone
+
         payload: dict[str, Any] = {
             "name": name,
             "unique_id": unique_id,
             "object_id": object_id,
-            "device": {
-                "name": device_name,
-                "identifiers": [device_id],
-                "manufacturer": "HiTE PRO",
-                "model": device_model,
-            },
+            "device": device_payload,
         }
 
         if ha_domain == "switch":
