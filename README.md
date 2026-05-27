@@ -14,7 +14,7 @@ Automatically discovers HiTE PRO gateways on your network and creates all their 
 ## Prerequisites
 
 - Home Assistant with the **MQTT** integration configured
-- The MQTT broker must be the same one your HiTE PRO gateway publishes to (192.168.2.143:1883)
+- The MQTT broker must be the same one your HiTE PRO gateway publishes to
 - The **Zeroconf** integration enabled (included by default in HA)
 
 ## Installation
@@ -48,8 +48,8 @@ The gateway advertises itself via mDNS as `_hitepro._tcp` on port 80.
 1. Go to **Settings → Devices & Services → Add Integration**
 2. Search for **"HiTE PRO"**
 3. Enter your gateway URL and API key:
-   - **Gateway URL**: `http://192.168.2.91/mqtt/` (LAN) or `https://845176aba149.connect-profi.ru/mqtt/` (remote)
-   - **API Key**: The `key` parameter (default: `dj75HFueb0Gh`)
+   - **Gateway URL**: `http://192.168.1.2/mqtt/` (LAN) or `https://xxxxxxxxx.connect-profi.ru/mqtt/` (remote)
+   - **API Key**: The `key` parameter from your gateway
 4. Click Submit — the integration validates the connection before saving
 
 ## Auto-Refresh
