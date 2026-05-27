@@ -20,7 +20,7 @@ ZEROCONF_TYPE = "_hitepro._tcp.local."
 
 class HiteProConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
-    MINOR_VERSION = 1
+    MINOR_VERSION = 0
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}

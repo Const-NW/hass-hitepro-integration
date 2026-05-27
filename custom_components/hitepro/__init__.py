@@ -5,7 +5,6 @@ from datetime import timedelta
 
 import aiohttp
 import ssl
-import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -22,23 +21,20 @@ from .discovery import (
 
 _LOGGER = logging.getLogger(__name__)
 
-CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
-
-
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    hass.data.setdefault(DOMAIN, {})
-
-    async def handle_refresh(call: ServiceCall) -> None:
-        for entry in hass.config_entries.async_entries(DOMAIN):
-            await _async_refresh_entry(hass, entry)
-
-    hass.services.async_register(DOMAIN, SERVICE_REFRESH, handle_refresh)
-    return True
+PLATFORMS: list[str] = []
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {"entities": [], "unsub": None}
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    async def handle_refresh(call: ServiceCall) -> None:
+        for entry_item in hass.config_entries.async_entries(DOMAIN):
+            await _async_refresh_entry(hass, entry_item)
+
+    hass.services.async_register(DOMAIN, SERVICE_REFRESH, handle_refresh)
 
     await _async_refresh_entry(hass, entry)
     _start_refresh_timer(hass, entry)
@@ -64,7 +60,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await async_remove_discovery(hass, entities)
 
     hass.data[DOMAIN].pop(entry.entry_id, None)
-    return True
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -92,7 +88,7 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     full_url = f"{url}?key={api_key}" if api_key else url
 
     try:
-        config_text = await _async_fetch_config(hass, full_url)
+        config_text = await _async_fetch_config(full_url)
     except Exception as err:
         _LOGGER.error("Failed to fetch HiTE PRO config: %s", err)
         return
@@ -126,7 +122,7 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     )
 
 
-async def _async_fetch_config(hass: HomeAssistant, url: str) -> str:
+async def _async_fetch_config(url: str) -> str:
     if url.startswith("https://"):
         ssl_ctx = ssl.create_default_context()
         ssl_ctx.check_hostname = False
