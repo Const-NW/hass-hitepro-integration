@@ -7,6 +7,7 @@ import aiohttp
 import ssl
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.core import callback
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from homeassistant.data_entry_flow import FlowResult
 
@@ -143,14 +144,12 @@ class HiteProConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return None
 
     @staticmethod
+    @callback
     def async_get_options_flow(config_entry):
-        return HiteProOptionsFlow(config_entry)
+        return HiteProOptionsFlow()
 
 
 class HiteProOptionsFlow(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry):
-        self.config_entry = config_entry
-
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
