@@ -51,7 +51,19 @@ class HiteEntity:
     readonly: bool
     state_topic: str
     command_topic: str | None
+    device_id: str = ""
+    device_name: str = ""
+    device_model: str = ""
     config: dict[str, Any] = field(default_factory=dict)
+
+
+def _extract_device(control_id: str) -> tuple[str, str, str]:
+    parts = control_id.split("_")
+    model = parts[0] if len(parts) >= 1 else control_id
+    serial = parts[1] if len(parts) >= 2 else ""
+    device_id = f"{model}_{serial}" if serial else model
+    device_model = model.replace("-", " ")
+    return device_id, device_model, device_id
 
 
 def parse_hitepro_js(text: str) -> dict[str, Any]:
@@ -93,12 +105,11 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
         if not name:
             name = control_id
 
-        zone_slug = _slugify(zone)
-        device_id = f"hitepro_{zone_slug}" if zone_slug else "hitepro"
+        device_id, device_model, device_name = _extract_device(control_id)
         ha_domain = WB_TYPE_MAP.get(wb_type, "switch")
         slug = _slugify(control_id)
-        object_id = f"hitepro_{slug}"
-        unique_id = f"hitepro_{slug}"
+        object_id = slug
+        unique_id = slug
 
         state_topic = f"{WB_CTRL_TOPIC}/{control_id}"
         command_topic = None if readonly else f"{WB_CTRL_TOPIC}/{control_id}/on"
@@ -108,10 +119,10 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
             "unique_id": unique_id,
             "object_id": object_id,
             "device": {
-                "name": zone,
+                "name": device_name,
                 "identifiers": [device_id],
                 "manufacturer": "HiTE PRO",
-                "model": "HiTE PRO Gateway",
+                "model": device_model,
             },
         }
 
@@ -170,6 +181,9 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
             readonly=readonly,
             state_topic=state_topic,
             command_topic=command_topic,
+            device_id=device_id,
+            device_name=device_name,
+            device_model=device_model,
             config=payload,
         ))
 
