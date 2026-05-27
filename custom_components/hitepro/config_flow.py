@@ -7,7 +7,7 @@ import aiohttp
 import ssl
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.components.zeroconf import ZeroconfServiceInfo
+from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import CONF_API_KEY, CONF_SCAN_INTERVAL, CONF_URL, DEFAULT_API_KEY, DEFAULT_SCAN_INTERVAL, DEFAULT_URL, DOMAIN
