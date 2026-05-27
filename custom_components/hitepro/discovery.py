@@ -87,8 +87,9 @@ def _slugify(text: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_]", "_", text).strip("_")
 
 
-def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
+def build_entities(cells: dict[str, Any], light_devices: list[str] | None = None) -> list[HiteEntity]:
     entities: list[HiteEntity] = []
+    light_set = set(light_devices or [])
 
     for control_id, cell in cells.items():
         if control_id == "Reload":
@@ -106,6 +107,9 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
 
         device_id, device_model, device_name = _extract_device(control_id)
         ha_domain = WB_TYPE_MAP.get(wb_type, "switch")
+
+        if control_id in light_set:
+            ha_domain = "light"
         slug = _slugify(control_id)
         object_id = slug
         unique_id = slug
@@ -138,7 +142,7 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
             payload["state_off"] = "0"
             payload["optimistic"] = False
 
-        elif ha_domain == "light" and wb_type == "range":
+        if ha_domain == "light" and wb_type == "range":
             payload["command_topic"] = command_topic
             payload["state_topic"] = state_topic
             payload["brightness_command_topic"] = command_topic
@@ -151,6 +155,15 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
             payload["state_topic"] = state_topic
             payload["rgb_command_topic"] = command_topic
             payload["rgb_state_topic"] = state_topic
+
+        elif ha_domain == "light":
+            payload["command_topic"] = command_topic
+            payload["state_topic"] = state_topic
+            payload["payload_on"] = "1"
+            payload["payload_off"] = "0"
+            payload["state_on"] = "1"
+            payload["state_off"] = "0"
+            payload["optimistic"] = False
 
         elif ha_domain == "sensor":
             payload["state_topic"] = state_topic

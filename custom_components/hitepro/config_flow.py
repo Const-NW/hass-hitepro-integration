@@ -11,7 +11,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import CONF_API_KEY, CONF_SCAN_INTERVAL, CONF_URL, DEFAULT_API_KEY, DEFAULT_SCAN_INTERVAL, DEFAULT_URL, DOMAIN
+from .const import CONF_API_KEY, CONF_LIGHT_DEVICES, CONF_SCAN_INTERVAL, CONF_URL, DEFAULT_API_KEY, DEFAULT_SCAN_INTERVAL, DEFAULT_URL, DOMAIN
 from .discovery import parse_hitepro_js
 
 _LOGGER = logging.getLogger(__name__)
@@ -152,8 +152,17 @@ class HiteProConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class HiteProOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            light_str = user_input.get(CONF_LIGHT_DEVICES, "").strip()
+            light_list = [s.strip() for s in light_str.split(",") if s.strip()] if light_str else []
+            return self.async_create_entry(
+                title="",
+                data={
+                    CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
+                    CONF_LIGHT_DEVICES: light_list,
+                },
+            )
 
+        current_lights = self.config_entry.options.get(CONF_LIGHT_DEVICES, [])
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema({
@@ -161,5 +170,9 @@ class HiteProOptionsFlow(config_entries.OptionsFlow):
                     CONF_SCAN_INTERVAL,
                     default=self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
                 ): vol.All(int, vol.Range(min=60)),
+                vol.Optional(
+                    CONF_LIGHT_DEVICES,
+                    default=", ".join(current_lights) if current_lights else vol.UNDEFINED,
+                ): str,
             }),
         )

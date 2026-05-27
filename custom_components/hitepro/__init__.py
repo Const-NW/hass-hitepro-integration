@@ -10,7 +10,7 @@ from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.event import async_track_time_interval
 
-from .const import CONF_API_KEY, CONF_URL, DEFAULT_SCAN_INTERVAL, DOMAIN, SERVICE_REFRESH
+from .const import CONF_API_KEY, CONF_LIGHT_DEVICES, CONF_URL, DEFAULT_SCAN_INTERVAL, DOMAIN, SERVICE_REFRESH
 from .discovery import (
     HiteEntity,
     async_publish_discovery,
@@ -103,7 +103,8 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
     cells = data.get("cells", {})
     url: str = entry.data.get(CONF_URL, "")
-    new_entities = build_entities(cells)
+    light_devices: list[str] = entry.options.get(CONF_LIGHT_DEVICES, [])
+    new_entities = build_entities(cells, light_devices=light_devices)
     gateway_entity = build_gateway_entity(url)
     new_entities.append(gateway_entity)
 

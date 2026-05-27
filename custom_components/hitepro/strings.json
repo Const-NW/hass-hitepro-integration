@@ -30,9 +30,10 @@
     "step": {
       "init": {
         "title": "HiTE PRO Options",
-        "description": "Configure the refresh interval for device discovery.",
+        "description": "Configure the refresh interval and device types.",
         "data": {
-          "scan_interval": "Refresh interval (seconds)"
+          "scan_interval": "Refresh interval (seconds)",
+          "light_devices": "Light devices (comma-separated control IDs, e.g. Relay-4S_9F4CAE93_1, Relay-4S_9F4CAE93_2)"
         }
       }
     }
