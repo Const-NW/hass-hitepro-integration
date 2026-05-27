@@ -13,6 +13,5 @@
     {"type": "_hitepro._tcp.local.", "properties": {"model": "hitepro-gateway"}},
     {"type": "_http._tcp.local.", "name": "hitepro*"}
   ],
-  "version": "1.2.2",
-  "icon": "icons/icon.png"
+  "version": "1.2.3"
 }
