@@ -174,12 +174,9 @@ def build_entities(cells: dict[str, Any]) -> list[HiteEntity]:
     return entities
 
 
-async def _async_get_mqtt(hass: HomeAssistant):
-    from homeassistant.components.mqtt import DATA_MQTT
-    if DATA_MQTT not in hass.data:
-        from homeassistant.components.mqtt import async_wait_for_mqtt_client
-        await async_wait_for_mqtt_client(hass)
-    return hass.data[DATA_MQTT]
+async def _async_ensure_mqtt(hass: HomeAssistant) -> None:
+    from homeassistant.components.mqtt import async_wait_for_mqtt_client
+    await async_wait_for_mqtt_client(hass)
 
 
 async def async_publish_discovery(
@@ -187,12 +184,14 @@ async def async_publish_discovery(
     entities: list[HiteEntity],
     discovery_prefix: str = "homeassistant",
 ) -> None:
-    mqtt = await _async_get_mqtt(hass)
+    from homeassistant.components.mqtt import async_publish
+
+    await _async_ensure_mqtt(hass)
 
     for ent in entities:
         topic = f"{discovery_prefix}/{ent.domain}/hitepro/{ent.object_id}/config"
         payload = json.dumps(ent.config, ensure_ascii=False)
-        mqtt.async_publish(topic, payload, qos=1, retain=True)
+        await async_publish(hass, topic, payload, qos=1, retain=True)
         _LOGGER.debug("Published discovery: %s/%s", ent.domain, ent.object_id)
 
     _LOGGER.info("Published %d discovery configs", len(entities))
@@ -203,11 +202,13 @@ async def async_remove_discovery(
     entities: list[HiteEntity],
     discovery_prefix: str = "homeassistant",
 ) -> None:
-    mqtt = await _async_get_mqtt(hass)
+    from homeassistant.components.mqtt import async_publish
+
+    await _async_ensure_mqtt(hass)
 
     for ent in entities:
         topic = f"{discovery_prefix}/{ent.domain}/hitepro/{ent.object_id}/config"
-        mqtt.async_publish(topic, "", qos=1, retain=True)
+        await async_publish(hass, topic, "", qos=1, retain=True)
         _LOGGER.debug("Removed discovery: %s/%s", ent.domain, ent.object_id)
 
     _LOGGER.info("Removed %d discovery configs", len(entities))
