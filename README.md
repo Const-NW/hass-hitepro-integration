@@ -1,8 +1,9 @@
 # HiTE PRO Home Assistant Integration
 
 [![GitHub Release][releases-shield]][releases]
-[![hacs][hacsbadge]][hacs]
 [![Project Maintenance][maintenance-shield]][user_profile]
+
+> **Note:** The maintainer does not have access to all varieties of HiTE PRO devices. Only some device types have been tested and confirmed working. If your device is not supported, please share your gateway configuration and report bugs via [Issues](https://github.com/illmouse/hass-hitepro-integration/issues) — I will review them and test when time permits. Pull requests are also welcome and will be reviewed.
 
 Automatically discovers HiTE PRO gateways on your network and creates all their devices as MQTT entities in Home Assistant.
 
@@ -23,22 +24,22 @@ Automatically discovers HiTE PRO gateways on your network and creates all their 
 
 ## Installation
 
-### HACS (Recommended)
-
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=illmouse&repository=hass-hitepro-integration&category=integration)
+### HACS (Custom Repository)
 
 1. Install [HACS][hacs-download] if you don't have it yet
-2. Click the button above or search for `HiTE PRO` in HACS
-3. Click **Download**
-4. Restart Home Assistant
+2. In HACS, go to **Integrations → ⋮ → Custom Repositories**
+3. Add `https://github.com/illmouse/hass-hitepro-integration` as an **Integration** repository
+4. Search for `HiTE PRO` in HACS and click **Download**
+5. Restart Home Assistant
 
 ### Manual
 
-1. Copy the `custom_components/hitepro/` directory to your HA config:
+1. Download or clone this repository
+2. Copy the `custom_components/hitepro/` directory to your HA config:
    ```
    /config/custom_components/hitepro/
    ```
-2. Restart Home Assistant
+3. Restart Home Assistant
 
 ## Configuration
 
@@ -133,7 +134,7 @@ custom_components/hitepro/
 ├── config_flow.py       # Config, zeroconf discovery & options flow
 ├── const.py             # Constants
 ├── discovery.py         # Config parser & MQTT discovery
-├── icons/
+├── brand/
 │   └── icon.png         # Integration icon
 ├── manifest.json        # Integration metadata (zeroconf, dependencies)
 ├── services.yaml        # Service definitions
@@ -145,9 +146,7 @@ custom_components/hitepro/
 
 [add-integration]: https://my.home-assistant.io/redirect/config_flow_start/?domain=hitepro
 [add-integration-badge]: https://my.home-assistant.io/badges/config_flow_start.svg
-[hacs]: https://hacs.xyz
 [hacs-download]: https://hacs.xyz/docs/setup/download
-[hacsbadge]: https://img.shields.io/badge/HACS-Default-blue.svg?style=flat
 [ha-logs]: https://my.home-assistant.io/redirect/logs
 [ha-logs-badge]: https://my.home-assistant.io/badges/logs.svg
 [ha-service]: https://my.home-assistant.io/redirect/developer_call_service/?service=logger.set_level
