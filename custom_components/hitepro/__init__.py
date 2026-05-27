@@ -15,7 +15,9 @@ from .discovery import (
     HiteEntity,
     async_publish_discovery,
     async_remove_discovery,
+    async_trigger_reload,
     build_entities,
+    build_gateway_entity,
     parse_hitepro_js,
 )
 
@@ -100,7 +102,10 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         return
 
     cells = data.get("cells", {})
+    url: str = entry.data.get(CONF_URL, "")
     new_entities = build_entities(cells)
+    gateway_entity = build_gateway_entity(url)
+    new_entities.append(gateway_entity)
 
     data_store = hass.data[DOMAIN].get(entry.entry_id, {})
     old_entities: list[HiteEntity] = data_store.get("entities", [])
@@ -112,6 +117,7 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         await async_remove_discovery(hass, removed)
 
     await async_publish_discovery(hass, new_entities)
+    await async_trigger_reload(hass)
 
     hass.data[DOMAIN][entry.entry_id]["entities"] = new_entities
     _LOGGER.info(

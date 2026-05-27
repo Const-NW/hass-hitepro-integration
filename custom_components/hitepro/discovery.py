@@ -11,7 +11,6 @@ from homeassistant.core import HomeAssistant
 from .const import WB_CTRL_TOPIC, WB_DEVICE
 
 _LOGGER = logging.getLogger(__name__)
-
 WB_TYPE_MAP = {
     "switch": "switch",
     "range": "light",
@@ -232,3 +231,53 @@ async def async_remove_discovery(
         _LOGGER.debug("Removed discovery: %s/%s", ent.domain, ent.object_id)
 
     _LOGGER.info("Removed %d discovery configs", len(entities))
+
+
+def build_gateway_entity(gateway_url: str) -> HiteEntity:
+    device_id = "HP-Gateway"
+    slug = "Reload"
+
+    payload: dict[str, Any] = {
+        "name": "Reload",
+        "unique_id": slug,
+        "object_id": slug,
+        "command_topic": f"{WB_CTRL_TOPIC}/Reload/on",
+        "payload_press": "1",
+        "device_class": "update",
+        "entity_category": "config",
+        "qos": 0,
+        "retain": False,
+        "device": {
+            "name": "Gateway",
+            "identifiers": [device_id],
+            "manufacturer": "HiTE PRO",
+            "model": "Gateway",
+            "configuration_url": gateway_url,
+        },
+    }
+
+    return HiteEntity(
+        control_id="Reload",
+        domain="button",
+        object_id=slug,
+        unique_id=slug,
+        name="Reload",
+        zone="",
+        wb_type="pushbutton",
+        readonly=False,
+        state_topic=f"{WB_CTRL_TOPIC}/Reload",
+        command_topic=f"{WB_CTRL_TOPIC}/Reload/on",
+        device_id=device_id,
+        device_name="Gateway",
+        device_model="Gateway",
+        config=payload,
+    )
+
+
+async def async_trigger_reload(hass: HomeAssistant) -> None:
+    from homeassistant.components.mqtt import async_publish
+
+    await _async_ensure_mqtt(hass)
+    reload_topic = f"{WB_CTRL_TOPIC}/Reload/on"
+    await async_publish(hass, reload_topic, "1", qos=0, retain=False)
+    _LOGGER.info("Triggered gateway Reload to sync device states")
