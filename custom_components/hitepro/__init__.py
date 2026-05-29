@@ -78,7 +78,7 @@ def _start_refresh_timer(hass: HomeAssistant, entry: ConfigEntry) -> None:
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     unsub = async_track_time_interval(
         hass,
-        lambda _: hass.async_create_task(_async_refresh_entry(hass, entry)),
+        lambda _: _async_refresh_entry(hass, entry),
         timedelta(seconds=scan_interval),
     )
     hass.data[DOMAIN][entry.entry_id]["unsub"] = unsub
