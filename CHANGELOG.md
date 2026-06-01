@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0b5 (2026-06-01)
+
+### Changed
+
+- **Timer debug logging** promoted to INFO level to diagnose periodic refresh not firing after HA restart.
+
 ## 1.2.0b4 (2026-06-01)
 
 ### Fixed
