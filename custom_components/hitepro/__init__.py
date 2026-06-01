@@ -79,6 +79,7 @@ def _start_refresh_timer(hass: HomeAssistant, entry: ConfigEntry) -> None:
         unsub()
 
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    _LOGGER.debug("Starting refresh timer for %s, interval=%ds", entry.entry_id, scan_interval)
     unsub = async_track_time_interval(
         hass,
         lambda _: _async_refresh_entry(hass, entry),
@@ -88,6 +89,7 @@ def _start_refresh_timer(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    _LOGGER.debug("Refreshing entry %s", entry.entry_id)
     url: str = entry.data.get(CONF_URL, "")
     api_key: str = entry.data.get(CONF_API_KEY, "")
     full_url = f"{url}?key={api_key}" if api_key else url
