@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0b6 (2026-06-01)
+
+### Fixed
+
+- **Post-startup state**: Skip gateway Reload on first load (states arrive before MQTT is ready). Periodic refreshes trigger Reload correctly, so states populate within one refresh cycle after restart.
+
 ## 1.2.0b5 (2026-06-01)
 
 ### Changed
