@@ -44,6 +44,8 @@ RGB_CONTROL_RE = re.compile(r"^(?P<prefix>.+)_(?P<channel>\d+)_rgb$")
 BRIGHTNESS_CONTROL_RE = re.compile(r"^(?P<prefix>.+)_(?P<channel>\d+)_brightness$")
 DRIVE_CONTROL_RE = re.compile(r"^(?P<prefix>Relay-Drive_[^_]+_\d+)_(?P<action>open|close)$")
 
+CLEANUP_VERSION = 1
+
 
 @dataclass
 class HiteEntity:
@@ -91,7 +93,8 @@ def _parse_title(title: str) -> tuple[str, str]:
 
 
 def _slugify(text: str) -> str:
-    return re.sub(r"[^a-zA-Z0-9_]", "_", text).strip("_")
+    result = re.sub(r"[^a-zA-Z0-9_]", "_", text).strip("_")
+    return result or "entity"
 
 
 def _state_topic(control_id: str) -> str:
@@ -115,7 +118,7 @@ def _device_payload(control_id: str, zone: str) -> tuple[str, str, str, dict[str
     return device_id, device_model, device_name, payload
 
 
-def _binary_sensor_device_class(control_id: str, title: str) -> str:
+def _binary_sensor_device_class(control_id: str, title: str) -> str | None:
     control_lower = control_id.lower()
     title_lower = title.lower()
 
@@ -131,13 +134,13 @@ def _binary_sensor_device_class(control_id: str, title: str) -> str:
     for keyword, dc in BINARY_SENSOR_DEVICE_CLASS_KEYWORDS.items():
         if keyword in title_lower:
             return dc
-    return "safety"
+    return None
 
 
 def _is_illumination_percent(control_id: str, cell: dict[str, Any], title: str) -> bool:
     text = f"{control_id} {title}".lower()
     value = str(cell.get("value", ""))
-    return "illumination" in text or "освещ" in text or value.endswith("%")
+    return ("illumination" in text or "освещ" in text) and re.match(r"^\d+%$", value.strip()) is not None
 
 
 def _make_entity(
@@ -257,7 +260,9 @@ def _make_entity(
         payload["state_topic"] = state_topic
         payload["payload_on"] = "1"
         payload["payload_off"] = "0"
-        payload["device_class"] = _binary_sensor_device_class(control_id, title)
+        device_class = _binary_sensor_device_class(control_id, title)
+        if device_class:
+            payload["device_class"] = device_class
 
     if payload_override:
         payload.update(payload_override)
@@ -308,6 +313,20 @@ def _find_rgb_brightness_pairs(cells: dict[str, Any]) -> dict[str, tuple[str, st
         brightness_id = f"{prefix}_{channel}_brightness"
         if brightness_id in cells:
             pairs[f"{prefix}_{channel}"] = (control_id, brightness_id)
+        else:
+            _LOGGER.warning("RGB control %s has no matching brightness control %s", control_id, brightness_id)
+    for control_id in cells:
+        m = BRIGHTNESS_CONTROL_RE.match(control_id)
+        if not m:
+            continue
+        prefix = m.group("prefix")
+        channel = m.group("channel")
+        combined_id = f"{prefix}_{channel}"
+        if combined_id in pairs:
+            continue
+        rgb_id = f"{prefix}_{channel}_rgb"
+        if rgb_id not in cells:
+            _LOGGER.warning("Brightness control %s has no matching RGB control %s", control_id, rgb_id)
     return pairs
 
 
@@ -409,6 +428,7 @@ def build_entities(cells: dict[str, Any], light_devices: list[str] | None = None
                 object_id=stop_id,
                 unique_id=stop_id,
                 name_suffix="Стоп",
+                command_topic_override=_command_topic(stop_control_id),
                 payload_override={"icon": "mdi:stop", "payload_press": "0"},
             ))
 
@@ -423,13 +443,6 @@ def build_entities(cells: dict[str, Any], light_devices: list[str] | None = None
 
 
 def build_legacy_cleanup_entities(cells: dict[str, Any], light_devices: list[str] | None = None) -> list[HiteEntity]:
-    """Return retained MQTT discovery configs that should be removed after smart remapping.
-
-    This is needed because old versions created e.g. RGB and brightness as two separate
-    light entities, pushbuttons as binary_sensors, and Relay-Drive actions as switches.
-    MQTT discovery configs are retained, so without explicit cleanup HA can keep stale
-    entities after an integration upgrade or Home Assistant restart.
-    """
     cleanup: list[HiteEntity] = []
 
     for _combined_id, (rgb_id, brightness_id) in _find_rgb_brightness_pairs(cells).items():

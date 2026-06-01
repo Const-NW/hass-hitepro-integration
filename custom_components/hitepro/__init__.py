@@ -22,6 +22,8 @@ from .discovery import (
     parse_hitepro_js,
 )
 
+from .discovery import CLEANUP_VERSION
+
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[str] = []
@@ -29,7 +31,7 @@ PLATFORMS: list[str] = []
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {"entities": [], "unsub": None, "legacy_cleanup_done": False}
+    hass.data[DOMAIN][entry.entry_id] = {"entities": [], "unsub": None, "cleanup_version": 0}
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -116,7 +118,8 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
     removed = [e for e in old_entities if (e.domain, e.object_id) not in new_ids]
     cleanup_entities: list[HiteEntity] = []
-    if not data_store.get("legacy_cleanup_done"):
+    current_version = data_store.get("cleanup_version", 0)
+    if current_version < CLEANUP_VERSION:
         cleanup_entities = build_legacy_cleanup_entities(cells, light_devices=light_devices)
         cleanup_entities = [e for e in cleanup_entities if (e.domain, e.object_id) not in new_ids]
 
@@ -133,7 +136,7 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
     hass.data[DOMAIN][entry.entry_id]["entities"] = new_entities
     if cleanup_entities:
-        hass.data[DOMAIN][entry.entry_id]["legacy_cleanup_done"] = True
+        hass.data[DOMAIN][entry.entry_id]["cleanup_version"] = CLEANUP_VERSION
     _LOGGER.info(
         "HiTE PRO refreshed: %d entities (%d added, %d removed, %d legacy cleaned)",
         len(new_entities),
