@@ -14,7 +14,6 @@ from .const import CONF_API_KEY, CONF_LIGHT_DEVICES, CONF_URL, DEFAULT_SCAN_INTE
 from .discovery import (
     HiteEntity,
     async_publish_discovery,
-    async_publish_initial_states,
     async_remove_discovery,
     async_trigger_reload,
     build_entities,
@@ -132,12 +131,8 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
     await async_publish_discovery(hass, new_entities)
 
-    should_reload = not old_entities or new_ids != old_ids
-    if should_reload:
+    if new_ids != old_ids:
         await async_trigger_reload(hass)
-
-    if not old_entities:
-        await async_publish_initial_states(hass, new_entities)
 
     hass.data[DOMAIN][entry.entry_id]["entities"] = new_entities
     if cleanup_entities:

@@ -63,7 +63,6 @@ class HiteEntity:
     device_name: str = ""
     device_model: str = ""
     config: dict[str, Any] = field(default_factory=dict)
-    initial_state: str | None = None
 
 
 def _extract_device(control_id: str) -> tuple[str, str, str]:
@@ -283,7 +282,6 @@ def _make_entity(
         device_name=device_name,
         device_model=device_model,
         config=payload,
-        initial_state=str(cell["value"]) if "value" in cell else None,
     )
 
 
@@ -485,20 +483,6 @@ async def async_publish_discovery(
         _LOGGER.debug("Published discovery: %s/%s", ent.domain, ent.object_id)
 
     _LOGGER.info("Published %d discovery configs", len(entities))
-
-
-async def async_publish_initial_states(hass: HomeAssistant, entities: list[HiteEntity]) -> None:
-    from homeassistant.components.mqtt import async_publish
-
-    await _async_ensure_mqtt(hass)
-
-    count = 0
-    for ent in entities:
-        if ent.initial_state is not None and ent.state_topic:
-            await async_publish(hass, ent.state_topic, ent.initial_state, qos=0, retain=True)
-            count += 1
-
-    _LOGGER.info("Published %d initial states", count)
 
 
 async def async_remove_discovery(
