@@ -131,8 +131,7 @@ async def _async_refresh_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
     await async_publish_discovery(hass, new_entities)
 
-    if new_ids != old_ids:
-        await async_trigger_reload(hass)
+    await async_trigger_reload(hass)
 
     hass.data[DOMAIN][entry.entry_id]["entities"] = new_entities
     if cleanup_entities:

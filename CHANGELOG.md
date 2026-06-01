@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0b2 (2026-06-01)
+
+### Fixed
+
+- **Always trigger gateway Reload** on every refresh cycle, not just when entities change. Ensures device states are pushed to MQTT after HA restart, preventing "unknown" state on all entities.
+
 ## 1.2.0b1 (2026-06-01)
 
 ### Added
