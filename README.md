@@ -102,6 +102,18 @@ State and commands follow Wiren Board convention:
 - **Command**: `/devices/hite-pro/controls/{control_id}/on`
 - **Discovery**: `homeassistant/{domain}/{entity_id}/config`
 
+## Known Limitations
+
+### States show "Unknown" after Home Assistant restart
+
+After an HA restart, all HiTE PRO entities may display **"Unknown"** state until the next scheduled refresh cycle (default: 5 minutes). This happens because:
+
+1. HA creates MQTT entities from retained discovery configs before this integration starts
+2. The HiTE PRO gateway does not retain state messages on the MQTT broker
+3. Our integration triggers a gateway Reload on startup, but the gateway pushes states before HA's MQTT subscriptions are fully established
+
+States populate automatically once the first periodic refresh runs. You can also manually trigger **Settings → Devices & Services → HiTE PRO → ⋮ → Reload** or call the `hitepro.refresh_devices` service to restore states immediately.
+
 ## Troubleshooting
 
 Enable debug logging:
